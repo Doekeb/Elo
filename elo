@@ -4,20 +4,20 @@ import sys, csv, argparse
 import statistics as stat
 from collections import defaultdict as dd
 
-# The initial league average (based on current FIDE average)
-initial_rating = 1660
+# The initial league average (current FIDE average = 1660)
+initial_rating = 1000
 
 # The k-factor to use for global k-factor situations
 # This value seems fairly standard if a global k-factor is to be used
 k_global = 32
 
-# The k-factors to use for dynamic k-factor situations
-# These values and the following function are based on the FIDE Elo system
+# The k-factors to use for dynamic k-factor situations.
+# These values and the following function are based on the FIDE Elo system.
 k_provisional = 40
 k_intermediate = 20
 k_pro = 10
-n_provisional_games = 30
-pro_cutoff = 2400
+n_provisional_games = 10
+pro_cutoff = 1300 # FIDE cutoff = 2400
 
 def get_k(ratings_list):
     n_games = len(ratings_list)
