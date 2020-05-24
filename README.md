@@ -1,5 +1,7 @@
 # Elo
-Simple Elo rating calculator
+A simple Elo rating calculator
+
+https://en.wikipedia.org/wiki/Elo_rating_system
 
 ## Dependencies:
 python3
