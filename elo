@@ -4,8 +4,28 @@ import sys, csv, argparse
 import statistics as stat
 from collections import defaultdict as dd
 
+# The initial league average (based on current FIDE average)
+initial_rating = 1660
+
+# The k-factor to use for global k-factor situations
 # This value seems fairly standard if a global k-factor is to be used
-global_k = 32
+k_global = 32
+
+# The k-factors to use for dynamic k-factor situations
+# These values and the following function are based on the FIDE Elo system
+k_provisional = 40
+k_intermediate = 20
+k_pro = 10
+n_provisional_games = 30
+pro_cutoff = 2400
+
+def get_k(ratings_list):
+    n_games = len(ratings_list)
+    if n_games < n_provisional_games:
+        return k_provisional
+    if max(ratings_list) < pro_cutoff:
+        return k_intermediate
+    return k_pro
 
 description = "elo is an implementation of the Elo rating system for zero-sum games.\n\
                https://en.wikipedia.org/wiki/Elo_rating_system"
@@ -20,9 +40,13 @@ if __name__ == "__main__":
     parser.add_argument("file", nargs="+", help=csv_help)
     parser.add_argument("-s", "--show_history", action="store_true",
                         help="Show all ratings updates.")
+    parser.add_argument("-d", "--dynamic", action="store_true",
+                        help="Use dynamic (instead of static) k-factors.")
+
     args = parser.parse_args()
     files = args.file
     show_history = args.show_history
+    dynamic = args.dynamic
 
     for file in files: # For each input csv file (argv[0] is this program)
         print(file+"\n"+"-"*15)
@@ -32,7 +56,7 @@ if __name__ == "__main__":
         # Default factory
         def df():
             if players == {}:
-                return [1000] # The first player starts at 1000
+                return [initial_rating] # The first player starts at 1000
             # Every other new player starts at the average ranking
             return [stat.mean([rankings[-1] for rankings in players.values()])]
 
@@ -49,10 +73,14 @@ if __name__ == "__main__":
                 winner_rating = players[winner][-1]
                 loser_rating = players[loser][-1]
 
-                # Currently k-factor is global, but could instead be based on
-                # rating and number of matches played
-                winner_k = global_k
-                loser_k = global_k
+                # Dynamic k-factor
+                if dynamic:
+                    winner_k = get_k(players[winner])
+                    loser_k = get_k(players[loser])
+                # Static (global) k-factor
+                else:
+                    winner_k = k_global
+                    loser_k = k_global
 
                 # Expectation
                 expected_outcome = 1 / (1 + 10**((loser_rating - winner_rating)/400))
@@ -68,4 +96,4 @@ if __name__ == "__main__":
                 else:
                     print(player, ratings[-1])
 
-        print("="*20+"\n")
+        print("="*20+"\n") # This is just for pretty printing
