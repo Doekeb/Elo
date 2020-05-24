@@ -6,8 +6,10 @@ from collections import defaultdict as dd
 
 # This value seems fairly standard if a global k-factor is to be used
 global_k = 32
+
 description = "elo is an implementation of the Elo rating system for zero-sum games.\n\
                https://en.wikipedia.org/wiki/Elo_rating_system"
+
 csv_help = "One or more CSV files, each representing a separate league.\
             Each row represents a single match, with the winner in the first column\
             and the loser in the second column.\
@@ -16,8 +18,12 @@ csv_help = "One or more CSV files, each representing a separate league.\
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("file", nargs="+", help=csv_help)
+    parser.add_argument("-s", "--show_history", action="store_true",
+                        help="Show all ratings updates.")
     args = parser.parse_args()
     files = args.file
+    show_history = args.show_history
+
     for file in files: # For each input csv file (argv[0] is this program)
         print(file+"\n"+"-"*15)
 
@@ -57,6 +63,9 @@ if __name__ == "__main__":
 
             # Print current ratings in descending order
             for player, ratings in sorted(players.items(), key=lambda x: x[1][-1], reverse=True):
-                print(player, ratings[-1])
+                if show_history:
+                    print(player, ratings)
+                else:
+                    print(player, ratings[-1])
 
         print("="*20+"\n")
